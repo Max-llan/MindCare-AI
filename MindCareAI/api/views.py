@@ -25,19 +25,20 @@ class UsuarioView(APIView):
 
 class EvaluacionEmocionalView(APIView):
 
+    @requiere_token  # Protegemos también el GET con autenticación
     def get(self, request):
-        evaluaciones = EvaluacionEmocional.objects.all()
+        # Filtramos solo las evaluaciones del usuario autenticado
+        evaluaciones = EvaluacionEmocional.objects.filter(usuario=request.usuario)
         serializer = EvaluacionEmocionalSerializer(evaluaciones, many=True)
         return Response(serializer.data)
 
     @requiere_token
     def post(self, request):
-        # ahora request.usuario es el objeto Usuario autenticado
         texto = request.data.get("texto", "")
         emocion, nivel_estres, recomendacion = analizar_texto(texto)
 
         data = {
-            "usuario": request.usuario.id,  # usamos usuario del token
+            "usuario": request.usuario.id,
             "texto": texto,
             "emocion": emocion,
             "nivel_estres": nivel_estres,
@@ -49,6 +50,7 @@ class EvaluacionEmocionalView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class LoginView(APIView):
     """
