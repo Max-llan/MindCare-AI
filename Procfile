@@ -1,1 +1,1 @@
-web: gunicorn MindCareAI.wsgi
+web: gunicorn MindCare-AI.wsgi
