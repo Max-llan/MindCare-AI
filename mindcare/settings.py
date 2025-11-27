@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-@j!6pse73tein_o#i0g^5ni4zx*5$vbpmc(&em^u2yc4qacp(i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://mindcare-ai-zb9a.onrender.com','localhost']
+ALLOWED_HOSTS = ['https://mindcare-ai-zb9a.onrender.com','localhost','127.0.0.1']
 
 
 # Application definition
@@ -62,11 +62,12 @@ ROOT_URLCONF = 'mindcare.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
+                'django.template.context_processors.debug',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],

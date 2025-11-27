@@ -7,6 +7,13 @@ from django.contrib.auth.hashers import check_password
 from .ia import analizar_texto
 from .auth_utils import crear_token_acceso
 from .auth_decorators import requiere_token
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+
+
+def home(request):
+    return render(request, "index.html")
+
 
 class UsuarioView(APIView):
 
@@ -105,3 +112,21 @@ class AnalizarTextoView(APIView):
             "nivel_estres": nivel_estres,
             "recomendacion": recomendacion
         })
+
+def analizar_form(request):
+    if request.method == "GET":
+        return render(request, "analizar.html")
+
+    if request.method == "POST":
+        texto = request.POST.get("texto", "")
+
+        emocion, nivel_estres, recomendacion = analizar_texto(texto)
+
+        contexto = {
+            "texto_usuario": texto,
+            "emocion": emocion,
+            "nivel_estres": nivel_estres,
+            "recomendacion": recomendacion
+        }
+
+        return render(request, "analizar.html", contexto)
