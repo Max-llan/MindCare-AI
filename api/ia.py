@@ -7,7 +7,7 @@ def analizar_texto(texto):
     emociones = {
         "estres":["estres","agobiado","cansado","presionado","cansada","presionada","estresado","estresada"],
         "ansiedad":["ansiedad","ansioso","ansiosa","nervioso","preocupado","miedo"],
-        "tristeza":["tristeza","deprimido","deprimida","triste","mal"],
+        "tristeza":["tristeza","deprimido","deprimida","triste"],
         "alegria":["feliz","contento","contenta","bien"]
     }
 
