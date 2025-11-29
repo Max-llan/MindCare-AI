@@ -1,36 +1,90 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from django.shortcuts import render
+from django.contrib.auth.hashers import make_password, check_password
+from django.conf import settings
+from datetime import datetime, timedelta
+import jwt
+
 from .models import Usuario, EvaluacionEmocional
 from .serializers import UsuarioSerializer, EvaluacionEmocionalSerializer
-from django.contrib.auth.hashers import check_password
 from .ia import analizar_texto
-from .auth_utils import crear_token_acceso
 from .auth_decorators import requiere_token
-from django.shortcuts import render
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.hashers import make_password
 
+
+# =============================
+#   VISTA PRINCIPAL (HTML)
+# =============================
 def home(request):
     return render(request, "index.html")
 
-class UsuarioView(APIView):
+
+# =============================
+#   REGISTRO
+# =============================
+class RegistroView(APIView):
+    permission_classes = []
 
     def post(self, request):
-        data = request.data.copy()
-        if "contraseña" in data:
-            data["contraseña"] = make_password(data["contraseña"])
-        serializer = UsuarioSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        nombre = request.data.get("nombre")
+        correo = request.data.get("correo")
+        contraseña = request.data.get("contraseña")
+
+        if not nombre or not correo or not contraseña:
+            return Response({"error": "Todos los campos son obligatorios"}, status=400)
+
+        if Usuario.objects.filter(correo=correo).exists():
+            return Response({"error": "El correo ya está registrado"}, status=400)
+
+        usuario = Usuario(
+            nombre=nombre,
+            correo=correo,
+            contraseña=make_password(contraseña)     # 🔥 Hash seguro
+        )
+        usuario.save()
+
+        return Response({"mensaje": "Usuario registrado correctamente"}, status=201)
 
 
+# =============================
+#   LOGIN
+# =============================
+class LoginView(APIView):
+    permission_classes = []
 
+    def post(self, request):
+        correo = request.data.get("correo")
+        contraseña = request.data.get("contraseña")
+
+        if not correo or not contraseña:
+            return Response({"error": "correo y contraseña requeridos"}, status=400)
+
+        try:
+            usuario = Usuario.objects.get(correo=correo)
+        except Usuario.DoesNotExist:
+            return Response({"error": "credenciales inválidas"}, status=401)
+
+        if not check_password(contraseña, usuario.contraseña):
+            return Response({"error": "credenciales inválidas"}, status=401)
+
+        # Crear token manual
+        payload = {
+            "user_id": usuario.id,
+            "exp": datetime.utcnow() + timedelta(hours=24),
+            "iat": datetime.utcnow()
+        }
+
+        token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
+
+        return Response({"access": token})
+
+
+# =============================
+#   EVALUACIONES (PROTEGIDO)
+# =============================
 class EvaluacionEmocionalView(APIView):
 
-    @requiere_token  
+    @requiere_token
     def get(self, request):
         evaluaciones = EvaluacionEmocional.objects.filter(usuario=request.usuario)
         serializer = EvaluacionEmocionalSerializer(evaluaciones, many=True)
@@ -39,6 +93,7 @@ class EvaluacionEmocionalView(APIView):
     @requiere_token
     def post(self, request):
         texto = request.data.get("texto", "")
+
         emocion, nivel_estres, recomendacion = analizar_texto(texto)
 
         data = {
@@ -52,41 +107,14 @@ class EvaluacionEmocionalView(APIView):
         serializer = EvaluacionEmocionalSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=201)
+
+        return Response(serializer.errors, status=400)
 
 
-class LoginView(APIView):
-    """
-    POST /api/login/
-    Body: { "correo": "<email>", "contraseña": "<pass>" }
-    Respuesta: { "access": "<token>" }
-    """
-    def post(self, request):
-        correo = request.data.get("correo")
-        contraseña = request.data.get("contraseña")
-
-        if not correo or not contraseña:
-            return Response({"error": "correo y contraseña requeridos"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            usuario = Usuario.objects.get(correo=correo)
-        except Usuario.DoesNotExist:
-            return Response({"error": "credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
-        valid = False
-        try:
-            valid = check_password(contraseña, usuario.contraseña)
-        except Exception:
-            valid = False
-
-        if not valid:
-            if contraseña != usuario.contraseña:
-                return Response({"error": "credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
-
-        
-        token = crear_token_acceso(usuario.id)
-        return Response({"access": token})
-    
+# =============================
+#   ANALIZAR TEXTO (API)
+# =============================
 class AnalizarTextoView(APIView):
 
     @requiere_token
@@ -94,8 +122,7 @@ class AnalizarTextoView(APIView):
         texto = request.data.get("texto", "")
 
         if texto == "":
-            return Response({"error": "El campo 'texto' es obligatorio."},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "El campo 'texto' es obligatorio."}, status=400)
 
         emocion, nivel_estres, recomendacion = analizar_texto(texto)
 
@@ -106,6 +133,10 @@ class AnalizarTextoView(APIView):
             "recomendacion": recomendacion
         })
 
+
+# =============================
+#   HTML: FORMULARIO WEB
+# =============================
 def analizar_form(request):
     if request.method == "GET":
         return render(request, "analizar.html")

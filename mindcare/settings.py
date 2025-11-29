@@ -26,9 +26,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-@j!6pse73tein_o#i0g^5ni4zx*5$vbpmc(&em^u2yc4qacp(i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['https://mindcare-ai-zb9a.onrender.com','localhost','127.0.0.1']
+ALLOWED_HOSTS = [    
+    "mindcare-ai-zb9a.onrender.com",
+    "localhost",
+    "127.0.0.1"
+]
 
 
 # Simple JWT settings
@@ -57,11 +61,9 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+    "DEFAULT_AUTHENTICATION_CLASSES": (),
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.AllowAny",
     ),
 }
 
