@@ -17,12 +17,17 @@
         body {
             background: #eef1f7;
             font-family: 'Segoe UI', sans-serif;
+            padding-top: 70px;
         }
 
         .navbar-custom {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             padding: 15px 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
         }
 
         .navbar-custom .navbar-brand {
@@ -49,29 +54,286 @@
             color: #667eea;
         }
 
-        .card {
+        .container-main {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .chat-section {
+            flex: 1;
+            background: white;
             border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 120px);
+            min-height: 600px;
         }
 
-        .btn-main {
-            background: #3f51b5;
+        .analysis-section {
+            flex: 0 0 350px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            text-align: center;
+            font-size: 18px;
             font-weight: bold;
-            padding: 10px 20px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            display: flex;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-bubble {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            word-wrap: break-word;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot .message-bubble {
+            background: #f0f0f0;
+            color: #333;
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-footer {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            background: #f9f9f9;
+            border-radius: 0 0 15px 15px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #ddd;
             border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Segoe UI', sans-serif;
+            transition: border-color 0.3s;
         }
 
-        .btn-main:hover {
-            background: #5c6bc0;
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
         }
 
-        .title {
-            font-size: 2rem;
+        .btn-send, .btn-voice {
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
             font-weight: bold;
+            transition: transform 0.2s;
         }
 
-        textarea {
-            resize: none;
+        .btn-send:hover, .btn-voice:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-voice {
+            padding: 12px 16px;
+        }
+
+        .btn-voice.listening {
+            background: #ff5722;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+
+        .analysis-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .analysis-card .label {
+            font-size: 12px;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .analysis-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .analysis-card .emoji {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .stress-bar {
+            margin-top: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .stress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #ffc107, #ff5722);
+            transition: width 0.3s ease;
+        }
+
+        .recommendation-card {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            margin-bottom: 15px;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .recommendation-card .title {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .history-item {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            border-left: 3px solid #667eea;
+        }
+
+        .history-item .time {
+            color: #999;
+            font-size: 11px;
+        }
+
+        @media (max-width: 1200px) {
+            .container-main {
+                flex-direction: column;
+            }
+
+            .analysis-section {
+                flex: 1;
+                max-height: 300px;
+            }
+
+            .chat-section {
+                min-height: 500px;
+            }
+        }
+
+        .title-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title-section h1 {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .title-section p {
+            color: #666;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -79,11 +341,10 @@
 <body>
 
     <script>
-        // Verificar sesión activa
+        // Verificar sesión
         function verificarSesion() {
             const token = localStorage.getItem("token");
             if (!token) {
-                // Si no hay token, redirigir a login
                 alert("Tu sesión ha expirado. Por favor inicia sesión nuevamente.");
                 window.location.href = "/login/";
                 return false;
@@ -91,15 +352,12 @@
             return true;
         }
 
-        // Verificar sesión al cargar la página
         window.addEventListener("load", () => {
             verificarSesion();
         });
 
-        // Verificar sesión cada 5 segundos
         setInterval(verificarSesion, 5000);
 
-        // Prevenir ir atrás después de cerrar sesión
         window.addEventListener("pageshow", (event) => {
             if (event.persisted && !localStorage.getItem("token")) {
                 window.location.href = "/login/";
@@ -107,147 +365,294 @@
         });
     </script>
 
-    <!-- NAVBAR CON CERRAR SESIÓN -->
-    <nav class="navbar navbar-custom">
-        <div class="container-fluid d-flex justify-content-between align-items-center">
+    <!-- NAVBAR -->
+    <nav class="navbar-custom">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 40px;">
             <div class="navbar-brand">
-                🧠 MindCare
+                🧠 MindCare - Análisis Emocional
             </div>
-            <button class="btn btn-logout" onclick="cerrarSesion()">🚪 Cerrar sesión</button>
+            <button class="btn-logout" onclick="cerrarSesion()">🚪 Cerrar sesión</button>
         </div>
     </nav>
 
-    <div class="container mt-5">
-
-        <div class="text-center mb-4">
-            <h1 class="title">Analizar estado emocional</h1>
-            <p class="text-muted">Escribe cómo te sientes hoy o usa tu voz para analizar tu estado emocional.</p>
-        </div>
-
-        <div class="card shadow p-4 col-lg-8 mx-auto">
-
-            <form method="POST" action="/analizar/">
-                {% csrf_token %}
-
-                <div class="mb-3">
-                    <label for="texto" class="form-label">Tu mensaje</label>
-                    <textarea id="texto" name="texto" class="form-control" rows="6" placeholder="Escribe aquí..." required></textarea>
-                </div>
-
-                <div class="text-center mt-3">
-                    <button type="submit" class="btn btn-main">Analizar con IA</button>
-                </div>
-            </form>
-
-        </div>
-
-        <!-- RESULTADO DEL ANÁLISIS POR TEXTO -->
-        {% if emocion %}
-        <div class="alert alert-primary mt-4 col-lg-8 mx-auto">
-            <h5>Resultado del análisis</h5>
-
-            <p><strong>Texto analizado:</strong> {{ texto_usuario }}</p>
-            <p><strong>Emoción detectada:</strong> {{ emocion }}</p>
-            <p><strong>Nivel de estrés:</strong> {{ nivel_estres }} / 10</p>
-            <p><strong>Recomendación:</strong> {{ recomendacion }}</p>
-        </div>
-        {% endif %}
-
-        <!-- ============================= -->
-        <!-- ANÁLISIS POR VOZ -->
-        <!-- ============================= -->
-        <div class="card shadow p-4 col-lg-8 mx-auto mt-4">
-
-            <h3 class="text-center mb-3">🎤 Analizar por voz</h3>
-
-            <button id="btnVoz" class="btn btn-main w-100">🎙 Hablar</button>
-
-            <p id="textoVoz" class="mt-3 fs-5 fw-bold text-center"></p>
-
-            <h5 class="mt-4">Resultado del análisis de voz:</h5>
-            <pre id="resultadoVoz" class="bg-light p-3 rounded"></pre>
-
-        </div>
-
-        <div class="text-center mt-4 mb-4">
-            <a href="/" class="text-decoration-none">← Volver al inicio</a>
-        </div>
-
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="title-section" style="max-width: 1400px; margin: 20px auto; padding: 0 20px;">
+        <h1>Analiza tu Estado Emocional</h1>
+        <p>Conversa con nuestro chatbot inteligente que detecta y comprende tus emociones</p>
     </div>
 
-<!-- ============================= -->
-<!-- SCRIPT DE RECONOCIMIENTO DE VOZ -->
-<!-- ============================= -->
+    <div class="container-main">
+        <!-- SECCIÓN DE CHAT -->
+        <div class="chat-section">
+            <div class="chat-header">
+                💬 Chatbot Emocional - Cuéntame cómo te sientes
+            </div>
 
-<script>
-let reconociendo = false;
-let reconocimiento;
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="message-bubble">
+                        ¡Hola! 👋 Soy tu asistente emocional. Estoy aquí para escucharte y ayudarte a entender mejor cómo te sientes. 
+                        <br><br>
+                        Puedes escribir lo que te preocupa, cuéntame cómo ha sido tu día, o simplemente expresar tus emociones. También puedo analizar tu voz.
+                        <br><br>
+                        ¿Cómo te sientes hoy?
+                    </div>
+                </div>
+            </div>
 
-if ("webkitSpeechRecognition" in window) {
-    reconocimiento = new webkitSpeechRecognition();
-    reconocimiento.lang = "es-CL";
-    reconocimiento.continuous = false;
-    reconocimiento.interimResults = false;
+            <div class="chat-footer">
+                <div class="input-group">
+                    <input 
+                        type="text" 
+                        class="chat-input" 
+                        id="chatInput" 
+                        placeholder="Escribe tu mensaje..." 
+                        onkeypress="if(event.key==='Enter') enviarMensaje()"
+                    >
+                    <button class="btn-send" onclick="enviarMensaje()">📤 Enviar</button>
+                    <button class="btn-voice" id="btnVoice" onclick="toggleVoice()">🎤</button>
+                </div>
+            </div>
+        </div>
 
-    reconocimiento.onstart = () => {
-        reconociendo = true;
-        document.getElementById("textoVoz").innerText = "🎙 Escuchando...";
-    };
+        <!-- SECCIÓN DE ANÁLISIS -->
+        <div class="analysis-section">
+            <div class="analysis-card" id="emotionCard">
+                <div class="emoji" id="emotionEmoji">⚪</div>
+                <div class="label">Emoción Detectada</div>
+                <div class="value" id="emotionValue">Esperando análisis...</div>
+            </div>
 
-    reconocimiento.onend = () => {
-        reconociendo = false;
-    };
+            <div class="analysis-card" style="background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);">
+                <div class="label">Nivel de Estrés</div>
+                <div class="value" id="stressValue">-</div>
+                <div class="stress-bar">
+                    <div class="stress-bar-fill" id="stressBar" style="width: 0%"></div>
+                </div>
+            </div>
 
-    reconocimiento.onresult = async (event) => {
-        const texto = event.results[0][0].transcript;
-        document.getElementById("textoVoz").innerText = "📝 Texto detectado: " + texto;
+            <div class="analysis-card" style="background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);">
+                <div class="label">Confianza del Análisis</div>
+                <div class="value" id="confidenceValue">-</div>
+            </div>
 
-        const token = localStorage.getItem("token");
+            <div class="recommendation-card">
+                <div class="title">💡 Recomendación</div>
+                <div id="recommendationText">Comienza la conversación para recibir recomendaciones personalizadas.</div>
+            </div>
 
-        try {
-            const res = await fetch("/api/analizar-texto/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify({ texto: texto })
-            });
+            <hr style="border-color: #ddd;">
 
-            const data = await res.json();
-            document.getElementById("resultadoVoz").innerText = JSON.stringify(data, null, 2);
+            <div style="margin-top: 15px;">
+                <strong style="color: #667eea;">📋 Historial</strong>
+                <div id="historyContainer" style="margin-top: 10px; max-height: 200px; overflow-y: auto;">
+                    <p style="color: #999; font-size: 12px;">Sin análisis aún</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        } catch (error) {
-            document.getElementById("resultadoVoz").innerText = "❌ Error al analizar";
+    <script>
+        // Reconocimiento de voz
+        let reconocimiento;
+        let escuchando = false;
+
+        if ("webkitSpeechRecognition" in window) {
+            reconocimiento = new webkitSpeechRecognition();
+            reconocimiento.lang = "es-ES";
+            reconocimiento.continuous = false;
+            reconocimiento.interimResults = false;
+
+            reconocimiento.onstart = () => {
+                escuchando = true;
+                document.getElementById("btnVoice").classList.add("listening");
+                document.getElementById("btnVoice").innerText = "🎙 Escuchando...";
+            };
+
+            reconocimiento.onend = () => {
+                escuchando = false;
+                document.getElementById("btnVoice").classList.remove("listening");
+                document.getElementById("btnVoice").innerText = "🎤";
+            };
+
+            reconocimiento.onresult = (event) => {
+                let texto = "";
+                for (let i = event.resultIndex; i < event.results.length; i++) {
+                    texto += event.results[i][0].transcript;
+                }
+                document.getElementById("chatInput").value = texto;
+                enviarMensaje();
+            };
+
+            reconocimiento.onerror = (event) => {
+                console.error("Error de voz:", event.error);
+            };
         }
-    };
 
-} else {
-    alert("Tu navegador no soporta reconocimiento de voz");
-}
-
-document.getElementById("btnVoz").onclick = () => {
-    if (!reconociendo) reconocimiento.start();
-};
-
-// Función para cerrar sesión
-function cerrarSesion() {
-    if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
-        localStorage.removeItem("token");
-        
-        // Limpiar historial para evitar volver atrás
-        window.location.href = "/login/";
-        
-        // Prevenir caché
-        window.history.pushState(null, '', window.location.href);
-        window.onpopstate = () => {
-            if (!localStorage.getItem("token")) {
-                window.location.href = "/login/";
+        function toggleVoice() {
+            if (reconocimiento) {
+                if (!escuchando) {
+                    reconocimiento.start();
+                } else {
+                    reconocimiento.stop();
+                }
+            } else {
+                alert("Tu navegador no soporta reconocimiento de voz");
             }
-        };
-    }
-}
-</script>
+        }
+
+        // Enviar mensaje
+        async function enviarMensaje() {
+            const input = document.getElementById("chatInput");
+            const mensaje = input.value.trim();
+
+            if (!mensaje) return;
+
+            // Agregar mensaje del usuario
+            agregarMensaje(mensaje, "user");
+            input.value = "";
+
+            // Mostrar indicador de escritura
+            mostrarIndicadorEscritura();
+
+            try {
+                const response = await fetch("/api/chatbot/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    },
+                    body: JSON.stringify({ mensaje })
+                });
+
+                const data = await response.json();
+
+                // Remover indicador
+                removerIndicadorEscritura();
+
+                if (response.ok) {
+                    agregarMensajeBotConAnalisis(data.respuesta, data.analisis);
+                    actualizarAnalisis(data.analisis, mensaje);
+                } else {
+                    agregarMensaje("Error al procesar tu mensaje. Intenta nuevamente.", "bot");
+                }
+            } catch (error) {
+                removerIndicadorEscritura();
+                agregarMensaje("Error de conexión. Intenta nuevamente.", "bot");
+                console.error("Error:", error);
+            }
+        }
+
+        function agregarMensaje(texto, tipo) {
+            const container = document.getElementById("chatMessages");
+            const div = document.createElement("div");
+            div.className = `message ${tipo}`;
+            div.innerHTML = `<div class="message-bubble">${escapeHtml(texto)}</div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function agregarMensajeBotConAnalisis(respuesta, analisis) {
+            const container = document.getElementById("chatMessages");
+            const div = document.createElement("div");
+            div.className = "message bot";
+            div.innerHTML = `<div class="message-bubble">${escapeHtml(respuesta)}</div>`;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function mostrarIndicadorEscritura() {
+            const container = document.getElementById("chatMessages");
+            const div = document.createElement("div");
+            div.className = "message bot";
+            div.id = "typing-indicator";
+            div.innerHTML = `
+                <div class="message-bubble">
+                    <div class="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function removerIndicadorEscritura() {
+            const indicator = document.getElementById("typing-indicator");
+            if (indicator) indicator.remove();
+        }
+
+        function actualizarAnalisis(analisis, mensaje) {
+            // Actualizar tarjeta de emoción
+            document.getElementById("emotionEmoji").innerText = analisis.emoji;
+            document.getElementById("emotionValue").innerText = analisis.emocion.toUpperCase();
+
+            // Actualizar nivel de estrés
+            document.getElementById("stressValue").innerText = `${analisis.nivel_estres}/10`;
+            document.getElementById("stressBar").style.width = `${analisis.nivel_estres * 10}%`;
+
+            // Actualizar confianza
+            document.getElementById("confidenceValue").innerText = `${analisis.confianza}%`;
+
+            // Actualizar recomendación (se extrae de la respuesta del bot)
+            const recomendacion = document.querySelector(".message.bot:last-child .message-bubble");
+            if (recomendacion) {
+                const texto = recomendacion.innerText;
+                const recMatch = texto.match(/📋 Mi recomendación:(.+?)(?:\n⚠️|\n✅|$)/s);
+                if (recMatch) {
+                    document.getElementById("recommendationText").innerText = recMatch[1].trim();
+                }
+            }
+
+            // Agregar al historial
+            agregarAlHistorial(analisis, mensaje);
+        }
+
+        function agregarAlHistorial(analisis, mensaje) {
+            const container = document.getElementById("historyContainer");
+            
+            if (container.innerHTML.includes("Sin análisis aún")) {
+                container.innerHTML = "";
+            }
+
+            const now = new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+            const item = document.createElement("div");
+            item.className = "history-item";
+            item.innerHTML = `
+                <strong>${analisis.emoji} ${analisis.emocion}</strong> - Estrés: ${analisis.nivel_estres}/10<br>
+                <span class="time">${now}</span>
+            `;
+            container.insertBefore(item, container.firstChild);
+        }
+
+        function escapeHtml(texto) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return texto.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function cerrarSesion() {
+            if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+                localStorage.removeItem("token");
+                
+                window.location.href = "/login/";
+                
+                window.history.pushState(null, '', window.location.href);
+                window.onpopstate = () => {
+                    if (!localStorage.getItem("token")) {
+                        window.location.href = "/login/";
+                    }
+                };
+            }
+        }
+    </script>
 
 </body>
 </html>

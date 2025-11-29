@@ -9,7 +9,7 @@ import re
 
 from .models import Usuario, EvaluacionEmocional
 from .serializers import UsuarioSerializer, EvaluacionEmocionalSerializer
-from .ia import analizar_texto
+from .ia import analizar_texto, obtener_analisis_completo
 from .auth_decorators import requiere_token
 from django.shortcuts import render
 
@@ -188,3 +188,148 @@ def analizar_form(request):
         }
 
         return render(request, "analizar.html", contexto)
+
+
+# =============================
+#   CHATBOT EMOCIONAL
+# =============================
+def chatbot_page(request):
+    return render(request, "chatbot.html")
+
+
+class ChatbotView(APIView):
+    """
+    API para el chatbot emocional.
+    Recibe mensajes del usuario y retorna análisis emocional + respuesta.
+    """
+    
+    @requiere_token
+    def post(self, request):
+        mensaje = request.data.get("mensaje", "").strip()
+
+        if not mensaje:
+            return Response({
+                "respuesta": "No recibí tu mensaje. Por favor intenta de nuevo.",
+                "analisis": {
+                    "emocion": "neutral",
+                    "emoji": "⚪",
+                    "confianza": 0,
+                    "nivel_estres": 5
+                }
+            }, status=400)
+
+        # Obtener análisis completo
+        analisis_completo = obtener_analisis_completo(mensaje)
+
+        # Generar respuesta empática del chatbot
+        respuesta = self._generar_respuesta_empatica(
+            mensaje,
+            analisis_completo["emocion_principal"],
+            analisis_completo["nivel_estres"],
+            analisis_completo["recomendacion"]
+        )
+
+        # Guardar evaluación
+        try:
+            evaluacion = EvaluacionEmocional.objects.create(
+                usuario=request.usuario,
+                texto=mensaje,
+                emocion=analisis_completo["emocion_principal"],
+                nivel_estres=int(round(analisis_completo["nivel_estres"])),
+                recomendacion=analisis_completo["recomendacion"]
+            )
+        except Exception as e:
+            print(f"Error al guardar evaluación: {e}")
+
+        return Response({
+            "respuesta": respuesta,
+            "analisis": {
+                "emocion": analisis_completo["emocion_principal"],
+                "emoji": analisis_completo["emojis"],
+                "confianza": int(analisis_completo["confianza"]),
+                "nivel_estres": int(round(analisis_completo["nivel_estres"]))
+            }
+        }, status=200)
+
+    def _generar_respuesta_empatica(self, mensaje, emocion, nivel_estres, recomendacion):
+        """Genera una respuesta empática basada en la emoción detectada con sesiones de apoyo."""
+        
+        respuestas_iniciales = {
+            "alegría": "¡Me alegra mucho escuchar eso! 😊 Tu energía positiva es contagiosa.",
+            "tristeza": "Entiendo que estés pasando por un momento difícil. 💙 Aquí estoy para escucharte.",
+            "ansiedad": "Detecté algo de preocupación en tu mensaje. Respira profundo, esto es importante. 🧘",
+            "enojo": "Parece que hay frustración. Está bien sentir esto. 💪 Hablemos al respecto.",
+            "calma": "Noto que te sientes en paz. ¡Que bonito! Mantén esa armonía. ✨",
+            "esperanza": "Veo optimismo en tus palabras. ¡Excelente! Confía en ti. 🎯",
+            "soledad": "No estás solo/a. Muchas personas sienten lo mismo. Te estoy escuchando. 🤝",
+            "culpa": "Es humano sentir culpa. Lo importante es aprender y crecer. 🌱",
+            "confusión": "Veo que hay incertidumbre. No te preocupes, lo aclararemos juntos. 💭",
+            "amor": "¡Qué hermoso sentir amor! 💕 Eso llena el corazón de significado.",
+            "orgullo": "¡Estás muy orgulloso de ti! Eso es saludable. Mantén esa confianza. 👑",
+            "vergüenza": "Entiendo tu vergüenza, pero no te define. Eres más que un momento. 💙",
+            "miedo": "Es normal tener miedo. El valor es enfrentarlo a pesar del miedo. 💪",
+            "gratitud": "¡Qué actitud tan hermosa! La gratitud transforma todo. 🙏",
+            "frustración": "Tu frustración es válida. A veces necesitamos reconocerla antes de avanzar. 💫",
+            "nostalgia": "Es bonito recordar. Aprecia esos momentos y crea nuevos. 📷",
+            "admiración": "Tu admiración te inspira. Deja que te motive a crecer. ⭐",
+            "disgusto": "Es válido alejarte de lo que te causa malestar. 🛡️",
+            "sorpresa": "¡Qué inesperado! Los giros en la vida pueden traer oportunidades. 🎁",
+            "vacío": "Ese vacío que sientes pide ser llenado de significado. Busquemos juntos. 🌟",
+            "alivio": "¡Qué bien se siente aliviarse! Disfruta este descanso. 😌",
+            "resentimiento": "El resentimiento pesa. El perdón puede liberarte. 🕊️",
+            "compasión": "¡Qué corazón compasivo tienes! Extiende eso hacia ti también. 💚",
+            "neutral": "Gracias por compartir conmigo. Aquí estoy para apoyarte. 👂"
+        }
+
+        respuesta_base = respuestas_iniciales.get(emocion, "Te entiendo perfectamente.")
+        
+        # Agregar recomendación personalizada
+        respuesta_completa = f"{respuesta_base}\n\n📋 Mi recomendación: {recomendacion}"
+        
+        # SESIÓN DE APOYO según nivel de estrés
+        if nivel_estres > 7:
+            respuesta_completa += "\n\n⚠️ SESIÓN DE APOYO - ESTRÉS CRÍTICO"
+            respuesta_completa += "\nTu nivel de estrés es muy alto. Aquí te ofrezco apoyo inmediato:"
+            respuesta_completa += "\n\n🧘 Técnica de respiración 4-4-4:"
+            respuesta_completa += "\n  1. Inhala profundamente por la nariz durante 4 segundos"
+            respuesta_completa += "\n  2. Sostén la respiración durante 4 segundos"
+            respuesta_completa += "\n  3. Exhala lentamente por la boca durante 4 segundos"
+            respuesta_completa += "\n  4. Repite 5-10 veces"
+            respuesta_completa += "\n\n💪 Acciones para ahora:"
+            respuesta_completa += "\n  • Tómate 5 minutos de pausa"
+            respuesta_completa += "\n  • Camina o muévete suavemente"
+            respuesta_completa += "\n  • Bebe agua"
+            respuesta_completa += "\n\n⚠️ Recursos de urgencia:"
+            respuesta_completa += "\n  Si la situación empeora, busca ayuda profesional de inmediato"
+            respuesta_completa += "\n  Línea de crisis: Disponible 24/7"
+            
+        elif nivel_estres > 5:
+            respuesta_completa += "\n\n⚡ SESIÓN DE APOYO - ESTRÉS MODERADO"
+            respuesta_completa += "\nTu nivel de estrés es moderado. Aquí hay acciones que pueden ayudarte:"
+            respuesta_completa += "\n\n🧘 Técnicas de relajación:"
+            respuesta_completa += "\n  • Meditación guiada (10 minutos)"
+            respuesta_completa += "\n  • Ejercicio físico ligero (yoga, caminata)"
+            respuesta_completa += "\n  • Música relajante o sonidos de la naturaleza"
+            respuesta_completa += "\n\n🤝 Apoyo social:"
+            respuesta_completa += "\n  • Conecta con un amigo cercano"
+            respuesta_completa += "\n  • Comparte tus sentimientos con alguien de confianza"
+            respuesta_completa += "\n  • Considera hablar con un terapeuta"
+            respuesta_completa += "\n\n📝 Estrategias de autocuidado:"
+            respuesta_completa += "\n  • Crea una rutina diaria de autosanación"
+            respuesta_completa += "\n  • Establece límites saludables"
+            respuesta_completa += "\n  • Dedica tiempo a actividades que disfrutes"
+            
+        else:
+            respuesta_completa += "\n\n✅ SESIÓN DE APOYO - BIENESTAR SOSTENIBLE"
+            respuesta_completa += "\nTu nivel de estrés está bajo. Mantén este bienestar:"
+            respuesta_completa += "\n\n🌟 Clave para mantener la paz:"
+            respuesta_completa += "\n  • Continúa con las actividades que te hacen feliz"
+            respuesta_completa += "\n  • Cultiva conexiones positivas"
+            respuesta_completa += "\n  • Practica gratitud diariamente"
+            respuesta_completa += "\n  • Cuida tu sueño y alimentación"
+            respuesta_completa += "\n\n💡 Para prevenir crisis futuras:"
+            respuesta_completa += "\n  • Identifica tus disparadores emocionales"
+            respuesta_completa += "\n  • Construye una red de apoyo sólida"
+            respuesta_completa += "\n  • Desarrolla habilidades de resiliencia"
+
+        return respuesta_completa
