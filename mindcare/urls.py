@@ -7,12 +7,14 @@ from api.views import (
     analizar_form,
     EvaluacionEmocionalView,
     AnalizarTextoView,
-    login_page
+    login_page,
+    registro_page
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("login/", login_page, name="login-page"),
+    path("registro/", registro_page, name="registro-page"),
 
     # AUTH
     path('api/login/', LoginView.as_view(), name="login"),

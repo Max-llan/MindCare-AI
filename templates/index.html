@@ -50,16 +50,53 @@
             text-align: center;
             margin-top: 50px;
         }
+
+        .navbar-session {
+            background: #3f51b5;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar-session .user-info {
+            color: white;
+            font-weight: 500;
+        }
+
+        .navbar-session .btn-logout {
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .navbar-session .btn-logout:hover {
+            background: #ff5252;
+        }
     </style>
 </head>
 
 <body>
 
+    <!-- NAVBAR CON INFO DE SESIÓN -->
+    <div class="navbar-session" id="navbarSession" style="display: none;">
+        <div class="user-info">
+            Sesión iniciada ✓
+        </div>
+        <button class="btn-logout" onclick="cerrarSesion()">🚪 Cerrar sesión</button>
+    </div>
+
     <!-- HERO -->
     <section class="hero">
         <h1 class="display-4 fw-bold">MindCare AI</h1>
         <p class="lead mt-3">Tu asistente inteligente para detectar estrés, ansiedad y apoyar tu bienestar emocional.</p>
-        <a href="/analizar" class="btn btn-main">Comenzar Análisis</a>
+        <a href="/analizar" class="btn btn-main" id="btnComenzar">Comenzar Análisis</a>
     </section>
 
     <!-- FEATURES -->
@@ -97,6 +134,48 @@
     <footer>
         © 2025 MindCare AI — Plataforma de bienestar emocional
     </footer>
+
+    <script>
+        // Verificar sesión al cargar
+        function verificarSesion() {
+            const token = localStorage.getItem("token");
+            const navbar = document.getElementById("navbarSession");
+            const btnComenzar = document.getElementById("btnComenzar");
+
+            if (token) {
+                // Sesión activa
+                navbar.style.display = "flex";
+                btnComenzar.href = "/analizar";
+            } else {
+                // Sin sesión
+                navbar.style.display = "none";
+                btnComenzar.href = "/login";
+                btnComenzar.innerText = "Inicia sesión para comenzar";
+            }
+        }
+
+        // Verificar al cargar
+        window.addEventListener("load", verificarSesion);
+
+        // Verificar cada 5 segundos
+        setInterval(verificarSesion, 5000);
+
+        // Prevenir volver después de cerrar sesión
+        window.addEventListener("pageshow", (event) => {
+            if (event.persisted) {
+                verificarSesion();
+            }
+        });
+
+        // Función para cerrar sesión
+        function cerrarSesion() {
+            if (confirm("¿Estás seguro de que deseas cerrar sesión?")) {
+                localStorage.removeItem("token");
+                alert("Sesión cerrada correctamente");
+                window.location.href = "/login/";
+            }
+        }
+    </script>
 
 </body>
 

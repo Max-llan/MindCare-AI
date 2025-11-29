@@ -5,6 +5,7 @@ from django.contrib.auth.hashers import make_password, check_password
 from django.conf import settings
 from datetime import datetime, timedelta
 import jwt
+import re
 
 from .models import Usuario, EvaluacionEmocional
 from .serializers import UsuarioSerializer, EvaluacionEmocionalSerializer
@@ -14,6 +15,9 @@ from django.shortcuts import render
 
 def login_page(request):
     return render(request, "login.html")
+
+def registro_page(request):
+    return render(request, "registro.html")
 
 
 
@@ -30,6 +34,26 @@ def home(request):
 class RegistroView(APIView):
     permission_classes = []
 
+    def validar_contraseña(self, contraseña):
+        """
+        Valida que la contraseña cumpla con los requisitos:
+        - Entre 8 y 16 caracteres
+        - Al menos una letra minúscula
+        - Al menos un carácter especial
+        """
+        errores = []
+        
+        if len(contraseña) < 8 or len(contraseña) > 16:
+            errores.append("La contraseña debe tener entre 8 y 16 caracteres")
+        
+        if not re.search(r'[a-z]', contraseña):
+            errores.append("La contraseña debe contener al menos una letra minúscula")
+        
+        if not re.search(r'[!@#$%^&*]', contraseña):
+            errores.append("La contraseña debe contener al menos un carácter especial (!@#$%^&*)")
+        
+        return errores
+
     def post(self, request):
         nombre = request.data.get("nombre")
         correo = request.data.get("correo")
@@ -37,6 +61,11 @@ class RegistroView(APIView):
 
         if not nombre or not correo or not contraseña:
             return Response({"error": "Todos los campos son obligatorios"}, status=400)
+
+        # Validar contraseña
+        errores_contraseña = self.validar_contraseña(contraseña)
+        if errores_contraseña:
+            return Response({"error": " | ".join(errores_contraseña)}, status=400)
 
         if Usuario.objects.filter(correo=correo).exists():
             return Response({"error": "El correo ya está registrado"}, status=400)
