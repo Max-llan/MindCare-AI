@@ -6,11 +6,13 @@ from api.views import (
     home,
     analizar_form,
     EvaluacionEmocionalView,
-    AnalizarTextoView
+    AnalizarTextoView,
+    login_page
 )
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("login/", login_page, name="login-page"),
 
     # AUTH
     path('api/login/', LoginView.as_view(), name="login"),
@@ -18,7 +20,8 @@ urlpatterns = [
 
     # FRONTEND / PÁGINAS
     path('', home, name='home'),
-    path('analizar', analizar_form, name='analizar'),
+    path("analizar/", analizar_form, name="analizar"),
+
 
     # API
     path('api/evaluaciones/', EvaluacionEmocionalView.as_view(), name="evaluaciones"),

@@ -10,6 +10,11 @@ from .models import Usuario, EvaluacionEmocional
 from .serializers import UsuarioSerializer, EvaluacionEmocionalSerializer
 from .ia import analizar_texto
 from .auth_decorators import requiere_token
+from django.shortcuts import render
+
+def login_page(request):
+    return render(request, "login.html")
+
 
 
 # =============================

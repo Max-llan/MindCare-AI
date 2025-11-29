@@ -2,48 +2,44 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>MindCare - Iniciar Sesión</title>
+    <title>Login - MindCare</title>
 </head>
-
 <body>
-    <h1>Iniciar Sesión</h1>
 
-    <form id="formLogin">
-        <input type="email" id="correo" placeholder="Correo" required><br>
-        <input type="password" id="contraseña" placeholder="Contraseña" required><br>
-        <button type="submit">Ingresar</button>
-    </form>
+<h2>Iniciar Sesión</h2>
 
-    <p id="resultado"></p>
+<form id="loginForm">
+    <label>Correo:</label>
+    <input type="email" id="correo" required><br>
 
-    <a href="/registro/">Crear cuenta</a>
+    <label>Contraseña:</label>
+    <input type="password" id="contraseña" required><br>
 
+    <button type="submit">Ingresar</button>
+</form>
+
+<p id="msg"></p>
 
 <script>
-document.getElementById("formLogin").addEventListener("submit", async (e) => {
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    let correo = document.getElementById("correo").value;
-    let contraseña = document.getElementById("contraseña").value;
+    const correo = document.getElementById("correo").value;
+    const contraseña = document.getElementById("contraseña").value;
 
-    let response = await fetch("/api/login/", {
+    const res = await fetch("/api/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ correo, contraseña })
     });
 
-    let data = await response.json();
+    const data = await res.json();
 
-    if (response.ok) {
+    if (data.access) {
         localStorage.setItem("token", data.access);
-        document.getElementById("resultado").innerText = "Login exitoso";
-
-        setTimeout(() => {
-            window.location.href = "/analizar/";
-        }, 500);
-
+        window.location.href = "/analizar/";
     } else {
-        document.getElementById("resultado").innerText = data.error || "Error";
+        document.getElementById("msg").innerText = data.error || "Error de login";
     }
 });
 </script>

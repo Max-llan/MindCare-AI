@@ -51,7 +51,7 @@
 
         <div class="card shadow p-4 col-lg-8 mx-auto">
 
-            <form method="POST" action="/analizar">
+            <form method="POST" action="/analizar/">
                 {% csrf_token %}
 
                 <div class="mb-3">
@@ -84,10 +84,11 @@
 
     </div>
     <script>
-        let token = localStorage.getItem("token");
-        if (!token) {
+        if (!localStorage.getItem("token")) {
             window.location.href = "/login/";
         }
     </script>
+    
+
 </body>
 </html>
