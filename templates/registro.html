@@ -2,46 +2,45 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>MindCare - Iniciar Sesión</title>
+    <title>MindCare - Registro</title>
 </head>
 
 <body>
-    <h1>Iniciar Sesión</h1>
+    <h1>Crear Cuenta</h1>
 
-    <form id="formLogin">
+    <form id="formRegistro">
+        <input type="text" id="nombre" placeholder="Nombre" required><br>
         <input type="email" id="correo" placeholder="Correo" required><br>
         <input type="password" id="contraseña" placeholder="Contraseña" required><br>
-        <button type="submit">Ingresar</button>
+        <button type="submit">Registrarse</button>
     </form>
 
     <p id="resultado"></p>
 
-    <a href="/registro/">Crear cuenta</a>
+    <a href="/login/">Ya tengo cuenta</a>
 
 
 <script>
-document.getElementById("formLogin").addEventListener("submit", async (e) => {
+document.getElementById("formRegistro").addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    let nombre = document.getElementById("nombre").value;
     let correo = document.getElementById("correo").value;
     let contraseña = document.getElementById("contraseña").value;
 
-    let response = await fetch("/api/login/", {
+    let response = await fetch("/api/registro/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo, contraseña })
+        body: JSON.stringify({ nombre, correo, contraseña })
     });
 
     let data = await response.json();
 
     if (response.ok) {
-        localStorage.setItem("token", data.access);
-        document.getElementById("resultado").innerText = "Login exitoso";
-
+        document.getElementById("resultado").innerText = "Usuario creado con éxito";
         setTimeout(() => {
-            window.location.href = "/analizar/";
+            window.location.href = "/login/";
         }, 500);
-
     } else {
         document.getElementById("resultado").innerText = data.error || "Error";
     }
