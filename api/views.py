@@ -9,32 +9,29 @@ from .auth_utils import crear_token_acceso
 from .auth_decorators import requiere_token
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-
+from django.contrib.auth.hashers import make_password
 
 def home(request):
     return render(request, "index.html")
 
-
 class UsuarioView(APIView):
 
-    def get(self, request):
-        usuarios = Usuario.objects.all()
-        serializer = UsuarioSerializer(usuarios, many=True)
-        return Response(serializer.data)
-
     def post(self, request):
-        serializer = UsuarioSerializer(data=request.data)
+        data = request.data.copy()
+        if "contraseña" in data:
+            data["contraseña"] = make_password(data["contraseña"])
+        serializer = UsuarioSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class EvaluacionEmocionalView(APIView):
 
-    @requiere_token  # Protegemos también el GET con autenticación
+    @requiere_token  
     def get(self, request):
-        # Filtramos solo las evaluaciones del usuario autenticado
         evaluaciones = EvaluacionEmocional.objects.filter(usuario=request.usuario)
         serializer = EvaluacionEmocionalSerializer(evaluaciones, many=True)
         return Response(serializer.data)
@@ -76,9 +73,6 @@ class LoginView(APIView):
             usuario = Usuario.objects.get(correo=correo)
         except Usuario.DoesNotExist:
             return Response({"error": "credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
-
-        # Verificar contraseña: intentamos check_password (por si fue hashed),
-        # si falla comparamos en texto plano (por compatibilidad con tu estado actual).
         valid = False
         try:
             valid = check_password(contraseña, usuario.contraseña)
@@ -86,7 +80,6 @@ class LoginView(APIView):
             valid = False
 
         if not valid:
-            # fallback: comparar en claro (solo si tu DB almacena claro)
             if contraseña != usuario.contraseña:
                 return Response({"error": "credenciales inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
 
