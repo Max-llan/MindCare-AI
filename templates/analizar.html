@@ -42,11 +42,17 @@
 
 <body>
 
+    <script>
+        if (!localStorage.getItem("token")) {
+            window.location.href = "/login/";
+        }
+    </script>
+
     <div class="container mt-5">
 
         <div class="text-center mb-4">
             <h1 class="title">Analizar estado emocional</h1>
-            <p class="text-muted">Escribe cómo te sientes hoy y MindCare AI analizará tu texto.</p>
+            <p class="text-muted">Escribe cómo te sientes hoy o usa tu voz para analizar tu estado emocional.</p>
         </div>
 
         <div class="card shadow p-4 col-lg-8 mx-auto">
@@ -66,7 +72,7 @@
 
         </div>
 
-        <!-- RESULTADO DEL ANÁLISIS -->
+        <!-- RESULTADO DEL ANÁLISIS POR TEXTO -->
         {% if emocion %}
         <div class="alert alert-primary mt-4 col-lg-8 mx-auto">
             <h5>Resultado del análisis</h5>
@@ -78,17 +84,83 @@
         </div>
         {% endif %}
 
+        <!-- ============================= -->
+        <!-- ANÁLISIS POR VOZ -->
+        <!-- ============================= -->
+        <div class="card shadow p-4 col-lg-8 mx-auto mt-4">
+
+            <h3 class="text-center mb-3">🎤 Analizar por voz</h3>
+
+            <button id="btnVoz" class="btn btn-main w-100">🎙 Hablar</button>
+
+            <p id="textoVoz" class="mt-3 fs-5 fw-bold text-center"></p>
+
+            <h5 class="mt-4">Resultado del análisis de voz:</h5>
+            <pre id="resultadoVoz" class="bg-light p-3 rounded"></pre>
+
+        </div>
+
         <div class="text-center mt-4">
             <a href="/" class="text-decoration-none">← Volver al inicio</a>
         </div>
 
     </div>
-    <script>
-        if (!localStorage.getItem("token")) {
-            window.location.href = "/login/";
+
+<!-- ============================= -->
+<!-- SCRIPT DE RECONOCIMIENTO DE VOZ -->
+<!-- ============================= -->
+
+<script>
+let reconociendo = false;
+let reconocimiento;
+
+if ("webkitSpeechRecognition" in window) {
+    reconocimiento = new webkitSpeechRecognition();
+    reconocimiento.lang = "es-CL";
+    reconocimiento.continuous = false;
+    reconocimiento.interimResults = false;
+
+    reconocimiento.onstart = () => {
+        reconociendo = true;
+        document.getElementById("textoVoz").innerText = "🎙 Escuchando...";
+    };
+
+    reconocimiento.onend = () => {
+        reconociendo = false;
+    };
+
+    reconocimiento.onresult = async (event) => {
+        const texto = event.results[0][0].transcript;
+        document.getElementById("textoVoz").innerText = "📝 Texto detectado: " + texto;
+
+        const token = localStorage.getItem("token");
+
+        try {
+            const res = await fetch("/api/analizar-texto/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ texto: texto })
+            });
+
+            const data = await res.json();
+            document.getElementById("resultadoVoz").innerText = JSON.stringify(data, null, 2);
+
+        } catch (error) {
+            document.getElementById("resultadoVoz").innerText = "❌ Error al analizar";
         }
-    </script>
-    
+    };
+
+} else {
+    alert("Tu navegador no soporta reconocimiento de voz");
+}
+
+document.getElementById("btnVoz").onclick = () => {
+    if (!reconociendo) reconocimiento.start();
+};
+</script>
 
 </body>
 </html>

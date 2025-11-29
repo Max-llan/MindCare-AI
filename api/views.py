@@ -122,7 +122,7 @@ class EvaluacionEmocionalView(APIView):
 # =============================
 class AnalizarTextoView(APIView):
 
-    @requiere_token
+    
     def post(self, request):
         texto = request.data.get("texto", "")
 
@@ -132,7 +132,7 @@ class AnalizarTextoView(APIView):
         emocion, nivel_estres, recomendacion = analizar_texto(texto)
 
         return Response({
-            "usuario": request.usuario.id,
+            "usuario": request.user.id,
             "emocion": emocion,
             "nivel_estres": nivel_estres,
             "recomendacion": recomendacion
