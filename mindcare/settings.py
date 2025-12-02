@@ -31,7 +31,7 @@ SECRET_KEY = 'django-insecure-@j!6pse73tein_o#i0g^5ni4zx*5$vbpmc(&em^u2yc4qacp(i
 DEBUG = True
 
 ALLOWED_HOSTS = [    
-    "mindcare-ai-zb9a.onrender.com",
+    "mindcare-ai-129e.onrender.com",
     "localhost",
     "127.0.0.1",
 ]
