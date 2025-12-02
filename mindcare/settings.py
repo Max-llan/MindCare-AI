@@ -13,6 +13,8 @@ import os
 import dj_database_url
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -102,12 +104,23 @@ WSGI_APPLICATION = 'mindcare.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+#DATABASES = {
+#    "default": {
+#        "ENGINE": "django.db.backends.sqlite3",
+#        "NAME": BASE_DIR / "db.sqlite3",
+#    }
+#}
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+     "default": {
+         "ENGINE": "django.db.backends.postgresql",
+         "NAME": os.getenv("db_name"),
+         "USER": os.getenv("db_user"),
+         "PASSWORD": os.getenv("db_password"),
+         "HOST": os.getenv("db_host"),
+         "PORT": os.getenv("db_port"),
     }
-}
+    
+ }
 
 
 # Password validation
