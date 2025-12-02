@@ -11,6 +11,7 @@ from .models import Usuario, EvaluacionEmocional
 from .serializers import UsuarioSerializer, EvaluacionEmocionalSerializer
 from .ia import analizar_texto, obtener_analisis_completo
 from .auth_decorators import requiere_token
+from .observers import get_event_manager
 from django.shortcuts import render
 
 def login_page(request):
@@ -77,6 +78,15 @@ class RegistroView(APIView):
         )
         usuario.save()
 
+        # 🔥 PATRÓN OBSERVER: Notificar registro de usuario
+        event_manager = get_event_manager()
+        event_manager.usuario_registrado({
+            "id": usuario.id,
+            "nombre": usuario.nombre,
+            "correo": usuario.correo,
+            "fecha_creacion": usuario.fecha_creacion.isoformat()
+        })
+
         return Response({"mensaje": "Usuario registrado correctamente"}, status=201)
 
 
@@ -110,6 +120,14 @@ class LoginView(APIView):
 
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
+        # 🔥 PATRÓN OBSERVER: Notificar login de usuario
+        event_manager = get_event_manager()
+        event_manager.usuario_login({
+            "id": usuario.id,
+            "nombre": usuario.nombre,
+            "correo": usuario.correo
+        })
+
         return Response({"access": token})
 
 
@@ -141,6 +159,21 @@ class EvaluacionEmocionalView(APIView):
         serializer = EvaluacionEmocionalSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            
+            # 🔥 PATRÓN OBSERVER: Notificar evaluación completada
+            event_manager = get_event_manager()
+            event_manager.evaluacion_completada(
+                usuario_id=request.usuario.id,
+                usuario_data={
+                    "id": request.usuario.id,
+                    "nombre": request.usuario.nombre,
+                    "correo": request.usuario.correo
+                },
+                emocion=emocion,
+                nivel_estres=nivel_estres,
+                recomendacion=recomendacion
+            )
+            
             return Response(serializer.data, status=201)
 
         return Response(serializer.errors, status=400)
@@ -238,8 +271,31 @@ class ChatbotView(APIView):
                 nivel_estres=int(round(analisis_completo["nivel_estres"])),
                 recomendacion=analisis_completo["recomendacion"]
             )
+            
+            # 🔥 PATRÓN OBSERVER: Notificar evaluación completada
+            event_manager = get_event_manager()
+            event_manager.evaluacion_completada(
+                usuario_id=request.usuario.id,
+                usuario_data={
+                    "id": request.usuario.id,
+                    "nombre": request.usuario.nombre,
+                    "correo": request.usuario.correo
+                },
+                emocion=analisis_completo["emocion_principal"],
+                nivel_estres=int(round(analisis_completo["nivel_estres"])),
+                recomendacion=analisis_completo["recomendacion"]
+            )
+            
         except Exception as e:
             print(f"Error al guardar evaluación: {e}")
+            
+            # 🔥 PATRÓN OBSERVER: Notificar error
+            event_manager = get_event_manager()
+            event_manager.error_ocurrido(
+                error_type="database_error",
+                error_message=str(e),
+                context={"usuario_id": request.usuario.id, "accion": "guardar_evaluacion"}
+            )
 
         return Response({
             "respuesta": respuesta,
