@@ -33,7 +33,11 @@ DEBUG = True
 ALLOWED_HOSTS = [    
     "mindcare-ai-zb9a.onrender.com",
     "localhost",
-    "127.0.0.1"
+    "127.0.0.1",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://mindcare-ai-129e.onrender.com'
 ]
 
 
